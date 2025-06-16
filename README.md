@@ -1,129 +1,110 @@
-# Laravel Redis Streams
+# Laravel Redis Stream Package
+[![Latest Stable Version](https://poser.pugx.org/iankibet/redis-stream/v/stable)](https://packagist.org/packages/iankibet/redis-stream)
+[![Total Downloads](https://poser.pugx.org/iankibet/redis-stream/downloads)](https://packagist.org/packages/iankibet/redis-stream)
+[![License](https://poser.pugx.org/iankibet/redis-stream/license)](https://packagist.org/packages/iankibet/redis-stream)
 
-A Laravel package to **publish** and **consume** messages using **Redis Streams**, offering a simple and reliable alternative to traditional queues or pub/sub.
+A Laravel package to use Redis Streams for lightweight, scalable inter-service communication or job/event dispatching.
 
 ---
 
 ## 🚀 Features
 
-- ✅ Stream-based messaging using Redis 5.0+ (`XADD`, `XREADGROUP`, `XACK`)
-- ✅ Multiple consumer support with consumer groups
-- ✅ Simple, Laravel-style API
-- ✅ Automatic group creation
-- ✅ Lightweight and queue-driver agnostic
+- Simple Redis Streams integration
+- Stream-to-handler mapping via config
+- Supports multiple consumers under the same group
+- Automatically dispatches Jobs or Events
+- Clean CLI command with optional consumer override
 
 ---
 
-## 📦 Installation
+## 🛠 Installation
 
 ```bash
 composer require iankibet/redis-stream
+```
+
+Publish the config:
+
+```bash
+php artisan vendor:publish --tag=redis-stream
 ```
 
 ---
 
 ## ⚙️ Configuration
 
-Optionally publish the config:
-
-```bash
-php artisan vendor:publish --tag=redis-stream-config
-```
-
-This will create `config/redis-stream.php`:
+Edit the generated config file at `config/redis-stream.php`:
 
 ```php
 return [
-    'stream' => env('REDIS_STREAM_NAME', 'events'),
-    'group' => env('REDIS_STREAM_GROUP', 'default'),
-    'consumer' => env('REDIS_STREAM_CONSUMER', env('APP_NAME', 'laravel')),
+    'group' => env('REDIS_STREAM_GROUP', env('APP_NAME', 'laravel')),
+
+    'consumer' => env('REDIS_STREAM_CONSUMER', env('REDIS_STREAM_GROUP', env('APP_NAME', 'laravel'))),
+
+    'handlers' => [
+        'user_activity' => [
+            App\Jobs\ProcessUserActivity::class,
+        ],
+        'order_events' => [
+            App\Events\OrderCreated::class,
+        ],
+    ],
 ];
 ```
 
 ---
 
-## 🧱 Usage
+## 📥 Publishing to a Stream
 
-### ✅ 1. Publish a Message to a Redis Stream
+You can publish messages using the `RedisStream` facade:
 
 ```php
 use Iankibet\RedisStream\RedisStream;
 
-$id = RedisStream::publish('user_activity', [
-    'event' => 'login',
-    'user_id' => 42,
+RedisStream::publish('order_events', [
+    'order_id' => 123,
+    'status' => 'created',
 ]);
 ```
 
-- Publishes to the `user_activity` stream
-- Automatically generates a stream ID
-
 ---
 
-### ✅ 2. Consume Messages from a Redis Stream (via Config)
+## 🧑‍💻 Consuming Messages
+
+Run the consumer using:
 
 ```bash
 php artisan redis:consume-stream
 ```
 
-- Uses values from `config('redis-stream.handlers')`, `group`, and `consumer`
-- Automatically acknowledges messages
-- Load balanced between consumers in the same group
+Or provide a specific consumer name:
+
+```bash
+php artisan redis:consume-stream worker-1
+```
+
+> Messages are read from all streams defined in the config and dispatched automatically to jobs or events.
 
 ---
 
 ## 🧪 Testing
 
+Run the tests:
+
 ```bash
 php artisan test
 ```
 
-Tests include:
-- Publishing to a stream
-- Consuming via consumer group
-- Config-based streaming
+---
+
+## 🧠 Notes
+
+- Each message is delivered to **only one consumer** in a group.
+- Redis automatically tracks pending/unacknowledged messages.
+- You should monitor or use `XPENDING` and `XCLAIM` to handle stuck messages in production.
 
 ---
 
-## 🛡 Requirements
+## 📄 License
 
-- PHP 8.0+
-- Laravel 9 or 10
-- Redis 5.0+ (Streams support)
-- `predis/predis` or `ext-redis`
-
----
-
-## 📂 File Structure
-
-```
-src/
-  RedisStream.php               # Main logic
-  RedisStreamServiceProvider.php
-  Console/RedisConsumeCommand.php
-  config/redis-stream.php
-tests/
-  RedisStreamTest.php
-  RedisStreamFromConfigTest.php
-```
-
----
-
-## 🧠 Why Redis Streams?
-
-Redis Streams are durable, acknowledgeable, and perfect for **reliable message processing**. Unlike Pub/Sub, they:
-- Store messages persistently
-- Let you replay or retry failed jobs
-- Load balance across consumers
-
----
-
-## 🧑‍💻 Maintainer
-
-- [Ian Kibet](mailto:kibethosea8@gmail.com)
-
----
-
-## 📝 License
-
-MIT
+MIT © Ian Kibet
