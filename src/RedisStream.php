@@ -8,6 +8,12 @@ class RedisStream
 {
     public static function publish(string $stream, array $payload): string
     {
+        // check payload, if there is any key that has array value, convert it to JSON
+        foreach ($payload as $key => $value) {
+            if (is_array($value) || is_object($value)) {
+                $payload[$key] = json_encode($value);
+            }
+        }
         return Redis::xAdd($stream, '*', $payload);
     }
 
