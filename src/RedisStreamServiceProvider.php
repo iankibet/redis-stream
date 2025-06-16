@@ -21,7 +21,7 @@ class RedisStreamServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->commands([
-                \Iankibet\RedisStream\Console\RedisSubscriberCommand::class,
+                \Iankibet\RedisStream\Console\RedisConsumeCommand::class,
             ]);
             $this->publishes([
                 __DIR__ . '/config/redis-stream.php' => config_path('redis-stream.php'),
