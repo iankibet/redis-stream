@@ -37,7 +37,6 @@ class RedisConsumeCommand extends Command
                     $this->log("[$stream] Handler class not found: {$handler}", 'warning');
                     continue;
                 }
-
                 try {
                     $instance = new $handler($payload);
 
