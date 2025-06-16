@@ -1,0 +1,26 @@
+{
+    "name": "iankibet/redis-stream",
+    "description": "A Laravel package to listen to Redis published messages.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ian Kibet",
+            "email": "kibethosea8@gmail.com"
+        }
+    ],
+    "require": {
+    },
+    "autoload": {
+        "psr-4": {
+            "Iankibet\\RedisStream\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Iankibet\\RedisStream\\RedisStreamServiceProvider"
+            ]
+        }
+    }
+}
