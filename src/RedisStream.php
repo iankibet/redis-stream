@@ -15,18 +15,17 @@ class RedisStream
     {
         // Try to create the group if it doesn't exist
         try {
-            Redis::xGroup('CREATE', $stream, $group, '0', true);
+           $res = Redis::xGroup('CREATE', $stream, $group, '0', true);
         } catch (\Exception $e) {
             // Group likely exists
         }
 
         while (true) {
             $messages = Redis::xReadGroup($group, $consumer, [$stream => '>'], $count, $block);
-
-            if (!empty($messages[$stream])) {
-                foreach ($messages[$stream] as $id => $fields) {
-                    $callback($id, $fields);
-                    Redis::xAck($stream, $group, [$id]);
+            foreach ($messages as $streamKey=> $message) {
+                foreach ($message as $id=>$payload) {
+                   $callback($id, $payload);
+//                    Redis::xAck($streamKey, $group, [$id]);
                 }
             }
 
